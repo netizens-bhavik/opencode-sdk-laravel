@@ -38,24 +38,26 @@ describe('assess', function (): void {
         expect($assessment->shouldComplete())->toBeFalse();
     });
 
-    test('returns Completed when file changes and stale', function (): void {
+    test('does not return Completed for file changes and stale alone', function (): void {
         $staleTimestamp = (int) (microtime(true) * 1000) - 150_000; // 150s ago
 
         MockClient::global([
             MockResponse::make([
                 'id' => 'ses_123',
                 'title' => 'Test',
+                'state' => null,
                 'time' => ['updated' => $staleTimestamp],
                 'summary' => ['files' => 3, 'additions' => 50, 'deletions' => 10],
             ]),
         ]);
 
+        // With null state and 150s stale (under 300s fallback threshold), session is Active
+        config()->set('opencode.session.fallback_idle_threshold_ms', 300_000);
+
         $session = createTestSession();
         $assessment = $this->manager->assess($session);
 
-        expect($assessment->state)->toBe(SessionState::Completed);
-        expect($assessment->shouldComplete())->toBeTrue();
-        expect($assessment->reason)->toContain('File changes');
+        expect($assessment->state)->not->toBe(SessionState::Completed);
     });
 
     test('returns Completed when completion indicators match', function (): void {

@@ -24,11 +24,10 @@ final class SessionManager
      * Detection chain:
      * 1. API session not found → Missing
      * 2. API reports terminal state (e.g. "completed") → Completed
-     * 3. File changes + stale > threshold → Completed
-     * 4. Completion indicators in last message → Completed
-     * 5. Known state + stale > threshold → Idle
-     * 6. state=null/empty + stale > fallback threshold → Idle
-     * 7. Otherwise → Active
+     * 3. Completion indicators in last message → Completed
+     * 4. Known state + stale > threshold → Idle
+     * 5. state=null/empty + stale > fallback threshold → Idle
+     * 6. Otherwise → Active
      *
      * @param  array<string>  $completionPatterns  Regex patterns to match in last message
      */
@@ -76,21 +75,7 @@ final class SessionManager
             $ageMs = $nowMs - (int) $updatedAt;
         }
 
-        // 3. File changes + stale → Completed
-        $hasFileChanges = isset($apiSession->summary) && (
-            ($apiSession->summary['files'] ?? 0) > 0 ||
-            ($apiSession->summary['additions'] ?? 0) > 0 ||
-            ($apiSession->summary['deletions'] ?? 0) > 0
-        );
-
-        if ($hasFileChanges && $ageMs !== null && $ageMs > $staleThreshold) {
-            return new SessionAssessment(
-                state: SessionState::Completed,
-                reason: sprintf('File changes detected and session stale for %dms', $ageMs),
-            );
-        }
-
-        // 4. Completion indicators in last message → Completed
+        // 3. Completion indicators in last message → Completed
         if ($completionPatterns !== []) {
             try {
                 $lastMessageText = $this->getLastMessageText($sessions, $session->session_id, $workspace);
@@ -112,7 +97,7 @@ final class SessionManager
             }
         }
 
-        // 5. Known state + stale > threshold → Idle
+        // 4. Known state + stale > threshold → Idle
         if ($apiSession->state !== null && $apiSession->state !== '' && $ageMs !== null && $ageMs > $staleThreshold) {
             return new SessionAssessment(
                 state: SessionState::Idle,
@@ -120,7 +105,7 @@ final class SessionManager
             );
         }
 
-        // 6. state=null/empty + stale > fallback threshold → Idle
+        // 5. state=null/empty + stale > fallback threshold → Idle
         if (($apiSession->state === null || $apiSession->state === '') && $ageMs !== null && $ageMs > $fallbackIdleThreshold) {
             return new SessionAssessment(
                 state: SessionState::Idle,
@@ -128,7 +113,7 @@ final class SessionManager
             );
         }
 
-        // 7. Active
+        // 6. Active
         return new SessionAssessment(state: SessionState::Active);
     }
 
