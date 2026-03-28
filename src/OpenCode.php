@@ -7,6 +7,7 @@ use HardImpact\OpenCode\Resources\ProjectResource;
 use HardImpact\OpenCode\Resources\ProviderResource;
 use HardImpact\OpenCode\Resources\QuestionResource;
 use HardImpact\OpenCode\Resources\SessionResource;
+use HardImpact\OpenCode\Resources\WorktreeResource;
 use Saloon\Http\Connector;
 
 class OpenCode extends Connector
@@ -52,6 +53,11 @@ class OpenCode extends Connector
         return $this->projects ??= new ProjectResource($this);
     }
 
+    public function worktrees(): WorktreeResource
+    {
+        return $this->worktrees ??= new WorktreeResource($this);
+    }
+
     private ?SessionResource $sessions = null;
 
     private ?EventResource $events = null;
@@ -61,4 +67,6 @@ class OpenCode extends Connector
     private ?ProviderResource $providers = null;
 
     private ?ProjectResource $projects = null;
+
+    private ?WorktreeResource $worktrees = null;
 }
