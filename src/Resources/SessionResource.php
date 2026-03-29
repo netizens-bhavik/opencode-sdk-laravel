@@ -123,8 +123,8 @@ class SessionResource extends BaseResource
 
     public function sendMessageAsync(
         string $id,
-        string $providerID,
-        string $modelID,
+        ?string $providerID,
+        ?string $modelID,
         string $text,
         ?string $directory = null,
         ?string $messageID = null,

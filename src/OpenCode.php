@@ -8,13 +8,25 @@ use HardImpact\OpenCode\Resources\ProviderResource;
 use HardImpact\OpenCode\Resources\QuestionResource;
 use HardImpact\OpenCode\Resources\SessionResource;
 use HardImpact\OpenCode\Resources\WorktreeResource;
+use Saloon\Http\Auth\BasicAuthenticator;
 use Saloon\Http\Connector;
 
 class OpenCode extends Connector
 {
     public function __construct(
         protected ?string $baseUrl = null,
+        protected ?string $username = null,
+        protected ?string $password = null,
     ) {}
+
+    public function defaultAuth(): ?BasicAuthenticator
+    {
+        if ($this->username !== null && $this->password !== null) {
+            return new BasicAuthenticator($this->username, $this->password);
+        }
+
+        return null;
+    }
 
     public function resolveBaseUrl(): string
     {

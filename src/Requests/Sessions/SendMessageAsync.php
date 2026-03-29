@@ -15,8 +15,8 @@ class SendMessageAsync extends Request implements HasBody
 
     public function __construct(
         protected string $id,
-        protected string $providerID,
-        protected string $modelID,
+        protected ?string $providerID,
+        protected ?string $modelID,
         protected array $parts,
         protected ?string $directory = null,
         protected ?string $messageID = null,
@@ -38,12 +38,19 @@ class SendMessageAsync extends Request implements HasBody
 
     protected function defaultBody(): array
     {
-        return array_filter([
-            'model' => [
+        $body = [
+            'parts' => $this->parts,
+        ];
+
+        if ($this->providerID !== null && $this->modelID !== null) {
+            $body['model'] = [
                 'providerID' => $this->providerID,
                 'modelID' => $this->modelID,
-            ],
-            'parts' => $this->parts,
+            ];
+        }
+
+        return array_filter([
+            ...$body,
             'messageID' => $this->messageID,
             'system' => $this->system,
             'tools' => $this->tools,
